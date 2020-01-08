@@ -13,6 +13,25 @@ CASI-3D (Convolutional Approach to Shell Identification - 3D) is a deep learning
     * shell_identifier_3_adaptive_lr.py, shell_identifier_3_adaptive_lr_IoU.py: Main scripts.
     * output_analysis.py, pred_trainingset.py, visualizations.py, real_bubbles_test.py: Evaluate training result.
 
+## Requirements
+astropy 
+
+keras 
+
+matplotlib
+
+numpy
+
+pandas
+
+scikit-learn
+
+scipy
+
+seaborn
+
+tensorflow
+
 
 
 
