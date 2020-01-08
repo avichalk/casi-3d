@@ -16,8 +16,10 @@ from sklearn.model_selection import train_test_split
 from tensorflow.python.client import device_lib
 
 import network_architectures as arch
-from preprocessing_log_binary2 import co_preprocessing, density_preprocessing
+#from preprocessing_log_binary2 import co_preprocessing, density_preprocessing
+#from preprocessing_log_binary import co_preprocessing, density_preprocessing
 #from preprocessing_linear_binary import co_preprocessing, density_preprocessing
+from preprocessing_log_binary12co_me1 import co_preprocessing, density_preprocessing
 
 
 def main():
@@ -48,7 +50,7 @@ def main():
 
     model = ShellIdentifier(name, model_hypers=model_hypers)
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.205)
 
     model.fit(x_train, y_train, **train_hypers)
 
@@ -61,7 +63,7 @@ def main():
 
     print(f'Test error of trained model: {error}\n\n')
 
-    pred = model.predict(x)
+    pred = model.predict(x,batch_size=hypers['batch_size'])
 
     error = model.evaluate(y, pred)
 
@@ -121,7 +123,7 @@ class ShellIdentifier:
 
         x_train, x_val, y_train, y_val = train_test_split(x,
                                                           y,
-                                                          test_size=0.25)
+                                                          test_size=0.255)
 #        gen = ImageDataGenerator(rotation_range=5,
 #                                 width_shift_range=0.1,
 #                                 height_shift_range=0.1,
