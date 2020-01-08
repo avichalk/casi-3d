@@ -1,8 +1,0 @@
-{
-    "model_hypers": {"filters": 36,
-                     "activation": "selu",
-                     "last_activation": "selu"},
-    "train_hypers": {"epochs": 277,
-                     "batch_size": 8},
-    "data_hypers": {"data_path": "../data/co13_3d_20190108_avg"}
-}
