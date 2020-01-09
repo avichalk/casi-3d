@@ -16,10 +16,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.python.client import device_lib
 
 import network_architectures as arch
-#from preprocessing_log_binary2 import co_preprocessing, density_preprocessing
-#from preprocessing_log_binary import co_preprocessing, density_preprocessing
-#from preprocessing_linear_binary import co_preprocessing, density_preprocessing
-from preprocessing_log_binary12co_me1 import co_preprocessing, density_preprocessing
+from preprocessing_log_binary2 import co_preprocessing, density_preprocessing
 
 
 def main():
