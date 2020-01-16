@@ -24,7 +24,7 @@ The hyper-parameters are set in hypers_3.json. The user can modify the CNNs arch
 ```bash
 python real_bubbles_test.py model_name
 ```
-The CASI-3D models (model ME1 and model MF) require the new 13CO data with a shape of 64*64*32 (position-position-velocity). The region should have an area close to 2.7 pc * 2.7 pc. The velocity resolution should be close to 0.25 km/s. The user can change the path of the new data in real_bubbles_test.py. Both CASI-3D models are trained on bubbles driven by low- or intermediate- mass young stars. Both models have been successfully tested on the Taurus molecular cloud ([Xu+ 2020](https://arxiv.org/abs/2001.04506)) and the Perseus molecular cloud (Xu+ in prep). 
+The CASI-3D models (model ME1 and model MF) require the new 13CO data with a shape of 64 * 64 * 32 (position-position-velocity). The region should have an area close to 2.7 pc * 2.7 pc. The velocity resolution should be close to 0.25 km/s. The user can change the path of the new data in real_bubbles_test.py. Both CASI-3D models are trained on bubbles driven by low- or intermediate- mass young stars. Both models have been successfully tested on the Taurus molecular cloud ([Xu+ 2020](https://arxiv.org/abs/2001.04506)) and the Perseus molecular cloud (Xu+ in prep). 
 
 
 ## Requirements
