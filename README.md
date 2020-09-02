@@ -1,8 +1,8 @@
-# Convolutional Approach to Shell Identification - 3D (`CASI-3D`)
+# Convolutional Approach to Structure Identification - 3D (`CASI-3D`)
 
 
 ## Description
-[CASI-3D](https://arxiv.org/abs/2001.04506) (Convolutional Approach to Shell Identification - 3D) is a deep learning method to identify signatures of stellar feedback in molecular line spectra, such as 13CO. CASI-3D is developed from [CASI-2D](https://casi-project.gitlab.io/casi-2d) ([Van Oort+2019](https://iopscience.iop.org/article/10.3847/1538-4357/ab275e/meta)) in order to exploit the full 3D spectral information. 
+[CASI-3D](https://arxiv.org/abs/2001.04506) (Convolutional Approach to Structure Identification - 3D) is a deep learning method to identify signatures of stellar feedback in molecular line spectra, such as 12CO and 13CO. CASI-3D is developed from [CASI-2D](https://casi-project.gitlab.io/casi-2d) ([Van Oort+2019](https://iopscience.iop.org/article/10.3847/1538-4357/ab275e/meta)) in order to exploit the full 3D spectral information. 
 
 ## Contents
  * data: .fits files containing several training samples. The entire training set will be shared upon request.
