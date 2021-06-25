@@ -36,7 +36,7 @@ def restrict_net_residual_block(
     """
 
     if loss is None:
-        loss = 'binary_crossentropy'
+        loss = 'mse'
 
     inputs = Input(shape=input_dims)
 
