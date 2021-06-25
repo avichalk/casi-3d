@@ -1,10 +1,76 @@
-from keras.layers import Activation, Add, BatchNormalization, Concatenate, \
-    Conv3D, GaussianNoise, Input, MaxPool3D, UpSampling3D
-from keras.models import Model
-from keras.optimizers import SGD
+from tensorflow.keras.layers import Activation, Add, BatchNormalization, Concatenate, \
+    Conv2D, GaussianNoise, Input, MaxPool2D, UpSampling2D, Flatten, Dense
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import SGD
 
 from network_components import dilated_block, dilated_residual_block, res_bottlneck,res_block
 
+def restrict_net_residual_block(
+        activation='relu',
+        depth=2,
+        filters=16,
+        input_dims=(100, 100, 1),
+        final_activation='selu',
+        loss=None,
+        noise_std=0.1,
+        merge=Add(),
+        optimizer=SGD(momentum=0.9),
+        output_channels=1,
+        
+):
+    """A U-Net without skip connections.
+
+    Args:
+        activation:
+        depth:
+        filters:
+        final_activation:
+        input_dims:
+        loss:
+        noise_std:
+        optimizer:
+        output_channels:
+
+    Returns:
+        (keras.models.Model) A compiled and ready-to-use Restrict-Net.
+    """
+
+    if loss is None:
+        loss = 'binary_crossentropy'
+
+    inputs = Input(shape=input_dims)
+
+    pred = GaussianNoise(stddev=noise_std)(inputs)
+
+    # Restriction
+    for _ in range(depth):
+        pred = res_bottlneck(
+            pred,
+            filters=filters,
+            activation=activation,
+            project=True,
+            merge=merge)
+        
+        pred = res_bottlneck(
+            pred,
+            filters=filters,
+            activation=activation,
+            project=True,
+            merge=merge)
+
+        pred = MaxPool2D(padding='same')(pred)
+        filters *= 2
+
+    pred = BatchNormalization()(pred)
+    pred = Activation(activation)(pred)
+    pred = Conv2D(filters, (3, 3), padding='same')(pred)
+
+    pred = Flatten()(pred)
+    pred = Dense(1, input_shape=(2,), activation="sigmoid")(pred)
+    
+    model = Model(inputs=inputs, outputs=pred)
+    model.compile(optimizer=optimizer, loss=loss)
+    return model
 
 def restrict_net(
         activation='selu',
@@ -44,34 +110,34 @@ def restrict_net(
     for _ in range(depth):
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3,3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3,3), padding='same')(pred)
 
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3,3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3,3, 3), padding='same')(pred)
 
-        pred = MaxPool3D()(pred)
+        pred = MaxPool2D()(pred)
         filters *= 2
 
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
-    pred = Conv3D(filters, (3, 3,3), padding='same')(pred)
+    pred = Conv2D(filters, (3, 3,3), padding='same')(pred)
 
     # Reconstitution
     for _ in range(depth):
-        pred = UpSampling3D()(pred)
+        pred = UpSampling2D()(pred)
         filters //= 2
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
-    pred = Conv3D(output_channels, (1, 1))(pred)
+    pred = Conv2D(output_channels, (1, 1))(pred)
     pred = BatchNormalization()(pred)
     pred = Activation(final_activation)(pred)
 
@@ -126,37 +192,37 @@ def u_net(
     for _ in range(depth):
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
         crosses.append(pred)
 
-        pred = MaxPool3D()(pred)
+        pred = MaxPool2D()(pred)
         filters *= 2
 
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
-    pred = Conv3D(filters, (3, 3), padding='same')(pred)
+    pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
     # Reconstitution
     for cross in crosses[::-1]:
-        pred = UpSampling3D()(pred)
+        pred = UpSampling2D()(pred)
         filters //= 2
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
         pred = Concatenate()([pred, cross])
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
         pred = BatchNormalization()(pred)
         pred = Activation(activation)(pred)
-        pred = Conv3D(filters, (3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
-    pred = Conv3D(output_channels, (1, 1))(pred)
+    pred = Conv2D(output_channels, (1, 1))(pred)
     pred = BatchNormalization()(pred)
     pred = Activation(final_activation)(pred)
 
@@ -226,7 +292,7 @@ def residual_u_net(
 
         crosses.append(pred)
 
-        pred = MaxPool3D()(pred)
+        pred = MaxPool2D()(pred)
         filters *= 2
 
     pred = res_bottlneck(
@@ -238,9 +304,9 @@ def residual_u_net(
 
     # Reconstitution
     for cross in crosses[::-1]:
-        pred = UpSampling3D()(pred)
+        pred = UpSampling2D()(pred)
         filters //= 2
-        pred = Conv3D(filters, (3, 3, 3), padding='same')(pred)
+        pred = Conv2D(filters, (3, 3, 3), padding='same')(pred)
 
         pred = Concatenate()([pred, cross])
         pred = res_bottlneck(
@@ -256,7 +322,7 @@ def residual_u_net(
 #            project=True,
 #            merge=merge)
 
-    pred = Conv3D(output_channels, (1, 1, 1))(pred)
+    pred = Conv2D(output_channels, (1, 1, 1))(pred)
     pred = BatchNormalization()(pred)
     pred = Activation(final_activation)(pred)
 
@@ -311,9 +377,9 @@ def dilated_net(
 
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
-    pred = Conv3D(filters, (3, 3, 3), padding='same')(pred)
+    pred = Conv2D(filters, (3, 3, 3), padding='same')(pred)
 
-    pred = Conv3D(output_channels, (1, 1, 1))(pred)
+    pred = Conv2D(output_channels, (1, 1, 1))(pred)
     pred = BatchNormalization()(pred)
     pred = Activation(final_activation)(pred)
 
@@ -360,7 +426,7 @@ def dilated_res_net(
     inputs = Input(shape=input_dims)
     pred = GaussianNoise(stddev=noise_std)(inputs)
 
-    pred = Conv3D(filters, (1, 1, 1))(pred)
+    pred = Conv2D(filters, (1, 1, 1))(pred)
     for _ in range(depth):
         pred = dilated_residual_block(
             pred,
@@ -370,9 +436,9 @@ def dilated_res_net(
 
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
-    pred = Conv3D(filters, (3, 3, 3), padding='same')(pred)
+    pred = Conv2D(filters, (3, 3, 3), padding='same')(pred)
 
-    pred = Conv3D(output_channels, (1, 1, 1))(pred)
+    pred = Conv2D(output_channels, (1, 1, 1))(pred)
     pred = BatchNormalization()(pred)
     pred = Activation(final_activation)(pred)
 

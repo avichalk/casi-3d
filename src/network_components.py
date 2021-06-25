@@ -3,11 +3,11 @@ Contains functions which construct basic building blocks for Keras models.
 """
 
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 import numpy as np
-from keras.callbacks import Callback
-from keras.layers import Activation, Add, BatchNormalization, Conv3D
-from keras.losses import mae, mse
+from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.layers import Activation, Add, BatchNormalization, Conv2D
+from tensorflow.keras.losses import mae, mse
 
 #from tf_ssim import ssim_multiscale
 
@@ -65,15 +65,15 @@ def res_block(x,
     Returns:
         Symbolic output tensor for the final activation
     """
-    pred = Conv3D(filters, filter_shape, padding='same')(x)
+    pred = Conv2D(filters, filter_shape, padding='same')(x)
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
 
-    pred = Conv3D(filters, filter_shape, padding='same')(pred)
+    pred = Conv2D(filters, filter_shape, padding='same')(pred)
     pred = BatchNormalization()(pred)
 
     if project:
-        x = Conv3D(filters, (1, 1, 1))(x)
+        x = Conv2D(filters, (1, 1, 1))(x)
         x = BatchNormalization()(x)
     pred = merge([x, pred])
     return Activation(activation)(pred)
@@ -82,7 +82,7 @@ def res_block(x,
 def res_bottlneck(x,
                   filters=16,
                   neck_filters=None,
-                  filter_shape=(3, 3, 3),
+                  filter_shape=(3, 3),
                   activation='selu',
                   merge=Add(),
                   project=False):
@@ -105,19 +105,19 @@ def res_bottlneck(x,
     if not neck_filters:
         neck_filters = max(filters // 4, 1)
 
-    pred = Conv3D(neck_filters, (1,1,1))(x)
+    pred = Conv2D(neck_filters, (1,1))(x)
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
 
-    pred = Conv3D(neck_filters, filter_shape, padding='same')(pred)
+    pred = Conv2D(neck_filters, filter_shape, padding='same')(pred)
     pred = BatchNormalization()(pred)
     pred = Activation(activation)(pred)
 
-    pred = Conv3D(filters, (1, 1, 1))(pred)
+    pred = Conv2D(filters, (1, 1))(pred)
     pred = BatchNormalization()(pred)
 
     if project:
-        x = Conv3D(filters, (1, 1, 1))(x)
+        x = Conv2D(filters, (1, 1))(x)
         x = BatchNormalization()(x)
 
     pred = merge([x, pred])
@@ -146,7 +146,7 @@ def dilated_residual_block(
         merge=merge)
 
     if project:
-        x = Conv3D(filters, 1)(x)
+        x = Conv2D(filters, 1)(x)
         x = BatchNormalization()(x)
     return merge([pred, x])
 
@@ -159,7 +159,7 @@ def dilated_block(
         merge=Add()):
     pred = BatchNormalization()(x)
     pred = Activation(activation)(pred)
-    preds = [Conv3D(filters, (3, 3, 3), dilation_rate=d, padding='same')(pred) for d in dilations]
+    preds = [Conv2D(filters, (3, 3), dilation_rate=d, padding='same')(pred) for d in dilations]
     preds = [BatchNormalization()(p) for p in preds]
     return merge(preds)
 

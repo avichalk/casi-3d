@@ -32,11 +32,13 @@ def main():
  
 #    analyze_taurus_all('unet_fraction_20190320_ep277_log_IoU')
     
-    make_fits_bigmap_prediction()
+   # make_fits_bigmap_prediction()
         
 def analyze_taurus_all(model_name):
-    file_path='/work/05184/xuduo117/project_CNN/NeuralSpaceBubbles/data_taurus/'
+    #file_path='../../../../../groups/yshirley/cnntrain/no'
+
     model = ShellIdentifier(model_name, load=True)
+    file_path=''
 #    model = ShellIdentifier('unet_13co_test_3d_res2_20180723', load=True)
         
     
@@ -50,15 +52,20 @@ def analyze_taurus_all(model_name):
 #    x=np.load(file_path+'all_image_crop_step10.npy')
 
 
-    for ctt_1 in range(138):
-#    for ctt_1 in range(1):
-        x=np.load(file_path+'all_image_rescale/all_image_crop_step5_'+str(ctt_1)+'.npy')
-#        x=np.load(file_path+'all_image_crop_step_16_renorm.npy')
+#    for ctt_1 in range(
+    x = 0
+    with fits.open(f'test_fit_file.fits') as fits_data:
+        x = np.reshape(fits_data[0].data, (100, 100))
 
+
+    for ctt_1 in range(1):
+#    for ctt_1 in range(1):
+        #x=np.load(file_path+'all_image_rescale/all_image_crop_step5_'+str(ctt_1)+'.npy')
+#        x=np.load(file_path+'all_image_crop_step_16_renorm.npy')
+        x = np.asarray(x)
         x = np.where(np.isnan(x), np.ones(x.shape) * np.nanmean(x), x)
         x = np.expand_dims(x, axis=-1)
-    #    x = np.expand_dims(x, axis=0)
-    
+        x = np.expand_dims(x, axis=0)
     
 #        x -=  np.min(x)
 #        x = np.log(x + 1)
@@ -78,8 +85,8 @@ def analyze_taurus_all(model_name):
         
 #        x=np.squeeze(x)
         y_pred=np.squeeze(y_pred)
-        np.save(file_path+'pred_frac_20190317/pred_all_image_crop_step5_'+str(ctt_1)+'.npy',y_pred)
-        print(ctt_1)
+        #np.save(file_path+'pred_frac_20190317/pred_all_image_crop_step5_'+str(ctt_1)+'.npy',y_pred)
+        print(y_pred)
 #        np.save(file_path+'pred_all_image_crop_step_16.npy',y_pred)
 #    fits.writeto('../output_fits/pred_{}.fits'.format('co13_0980_y27_99_conv1_rot0'),y_pred,overwrite=True)
         

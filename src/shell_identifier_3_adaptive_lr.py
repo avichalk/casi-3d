@@ -2,16 +2,17 @@ import datetime
 import json
 import sys
 from pathlib import Path
+import os
 
-import keras.backend as K
+import tensorflow.keras.backend as K
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from keras.callbacks import LearningRateScheduler,CSVLogger, ModelCheckpoint,EarlyStopping
-from keras.models import model_from_json
-from keras.optimizers import SGD
-from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import multi_gpu_model
+from tensorflow.keras.callbacks import LearningRateScheduler,CSVLogger, ModelCheckpoint,EarlyStopping
+from tensorflow.keras.models import model_from_json
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.utils import multi_gpu_model
 from sklearn.model_selection import train_test_split
 from tensorflow.python.client import device_lib
 
@@ -25,6 +26,10 @@ def main():
         name = sys.argv[1]
     else:
         name = 'test'
+# make directories
+    os.makedirs('../data/ModelOutputs/',exist_ok=True)
+    os.makedirs('../data/temp_co/',exist_ok=True)
+    os.makedirs('../logs/',exist_ok=True)
 
     with open('hypers_3.json', 'r') as f:
         params = json.load(f)
@@ -34,16 +39,7 @@ def main():
     data_hypers = params['data_hypers']
     hypers = {**model_hypers, **train_hypers, **data_hypers}
 
-    if 'co' in data_hypers['data_path'].lower():
-        preprocessing = co_preprocessing
-    elif 'density' in data_hypers['data_path'].lower():
-        preprocessing = density_preprocessing
-    else:
-        raise ValueError(
-            f"Incorrect data path, given {data_hypers['data_path']}"
-        )
-
-    x, y = preprocessing(data_path=data_hypers['data_path'])
+    x, y = co_preprocessing(data_path=data_hypers['data_path'])
 
     model = ShellIdentifier(name, model_hypers=model_hypers)
 
@@ -62,9 +58,9 @@ def main():
 
     pred = model.predict(x,batch_size=hypers['batch_size'])
 
-    error = model.evaluate(y, pred)
+    #error = model.evaluate(y, pred)
 
-    print(f'Total error of final model: {error}\n\n')
+    #print(f'Total error of final model: {error}\n\n')
 
     np.savez_compressed(f'../data/ModelOutputs/{name}_outputs',
                         X=x,
@@ -193,7 +189,7 @@ class ShellIdentifier:
                     noise_std=0.1,
                     activation='selu',
                     last_activation='selu'):
-        return arch.residual_u_net(filters=filters,
+        return arch.restrict_net_residual_block(filters=filters,
                                    noise_std=noise_std,
                                    activation=activation,
                                    final_activation=last_activation,

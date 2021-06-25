@@ -4,5 +4,5 @@
                      "last_activation": "selu"},
     "train_hypers": {"epochs": 277,
                      "batch_size": 8},
-    "data_hypers": {"data_path": "../data/co12_3d_20191103"}
+    "data_hypers": {"data_path": "../../../../../groups/yshirley/cnntrain"}
 }

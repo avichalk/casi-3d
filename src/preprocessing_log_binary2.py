@@ -7,6 +7,7 @@ other similar tasks.
 
 import re
 from pathlib import Path
+import random
 
 import numpy as np
 from astropy.io import fits
@@ -29,68 +30,49 @@ def density_preprocessing(x, y):
     y = np.expand_dims(y, axis=-1)
     return x, y
 
+def co_preprocessing(data_path=''):
 
-def co_preprocessing(data_path='../data/CleanCO'):
-    
-    if os.path.isfile('../data/temp_co/binary_co_log_noise_0108.npy'):
-        x,y=np.load('../data/temp_co/binary_co_log_noise_0108.npy')
-        
-    else:
-        tracer_files = get_co_tracer_files(data_path)
-        co_files = get_co_files(tracer_files)
-    
-        co = load_fits(co_files)
-        tracer = load_fits(tracer_files)
-    
-        x = np.asarray(co)
-        y = np.abs(np.asarray(tracer))
-        
-        indx_mask=(y>0.001)
-        y[~indx_mask]=0
-        y[indx_mask]=y[indx_mask]*5+x[indx_mask]
-        indx_mask=(y<0.4)
-        y[indx_mask]=0
-    #        indx_mask=(y>0.4)
-    #        y[indx_mask]=1
-        
-        
-        min_data=np.min(x)
-        x = np.log(x - min_data + 1.)
-        y = np.log(y - min_data + 1.)
-    #
-        mean_data=np.mean(x)
-        std_data=np.std(x)
-        if std_data ==0:
-            std_data=1
-    
-        y=y-mean_data
-        y=y/std_data
-        x=x-mean_data
-        x=x/std_data
-        
-        
-    #        x = normalize(x)
-    #        y = normalize(y)
-    
-    #    x = pad_data(x)
-    #    y = pad_data(y)
-    
-        x = np.expand_dims(x, axis=-1)
-        y = np.expand_dims(y, axis=-1)
-        np.save('../data/temp_co/binary_co_log_noise_0108.npy',[x,y])
+    tracer_files = get_co_tracer_files(data_path)
+    co_files = get_co_files(data_path)
 
+    co = load_fits(co_files)
+    tracer = load_fits(tracer_files)
+    dataset = co+tracer
+    labels = [1]*len(co)+[0]*len(tracer)
+
+    for i in range(len(dataset)): # randomizes position
+        index1 = random.randint(0, len(dataset)-1)
+        index2 = random.randint(0, len(dataset)-1)
+        temp_dat = dataset[index1]
+        dataset[index1] = dataset[index2]
+        dataset[index2] = temp_dat
+        temp_lab = labels[index1]
+        labels[index1] = labels[index2]
+        labels[index2] = temp_lab
+
+    x = np.asarray(dataset)
+    y = np.abs(np.asarray(labels)) # true or false for filament
+
+    min_data = np.min(x)
+    x = np.log(x - min_data + 1.)
+
+    mean_data = np.mean(x)
+    std_data = np.std(x)
+    if std_data == 0:
+        std_data = 1
+
+    x = x - mean_data
+    x = x / std_data
+    
+    x = np.expand_dims(x, axis=-1)
 
     return x, y
 
-
-def get_co_files(tracer_files):
-    return [x.replace('_tracer', '') for x in tracer_files]
-
-
+def get_co_files(data_path):
+    return [str(x) for x in Path(f'{data_path}/yes').glob('*.fits')]
 
 def get_co_tracer_files(data_path):
-    return [str(x) for x in Path(data_path).glob('*.fits')
-            if re.match(r'.*tracer.*', str(x))]
+    return [str(x) for x in Path(f'{data_path}/no').glob('*.fits')]
 
 
 def load_fits(files):
@@ -98,7 +80,7 @@ def load_fits(files):
 
     for file in files:
         with fits.open(file) as fits_data:
-            output_data.append(fits_data[0].data)
+            output_data.append(np.reshape(fits_data[0].data, (100, 100))) 
 
     return output_data
 
