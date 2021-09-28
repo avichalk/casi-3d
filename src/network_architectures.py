@@ -66,7 +66,12 @@ def restrict_net_residual_block(
     pred = Conv2D(filters, (3, 3), padding='same')(pred)
 
     pred = Flatten()(pred)
-    pred = Dense(1, input_shape=(2,), activation="sigmoid")(pred)
+    ###### pred = Dense(1, input_shape=(2,), activation="sigmoid")(pred)   ### I do not think the input shape is 2, i.e., only adopt two numbers? 
+   
+    ###### modified by DX
+    pred = Dense(256, activation=activation)(pred)
+    pred = Dense(1, activation=final_activation)(pred)
+    ######
     
     model = Model(inputs=inputs, outputs=pred)
     model.compile(optimizer=optimizer, loss=loss)
